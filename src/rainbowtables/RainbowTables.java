@@ -5,22 +5,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.*;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 
 public class RainbowTables {
 
-    static BigInteger prime = new BigInteger("102280476371", 10);
+    static BigInteger prime = new BigInteger("122949823");
     
     static char[] charset = {' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 
         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 
         'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static Random random = new Random();
     
-    static int tablesize = 100;
-    static int chainlength = 300;
-    static int stringlength = 5;
+    static int tablesize = 10000;
+    static int chainlength = 1000;
+    static int stringlength = 3;
     
     static HashMap<String, String> rainbow = new HashMap<>();
     
@@ -31,32 +30,48 @@ public class RainbowTables {
     public static void main(String[] args) throws FileNotFoundException, NoSuchAlgorithmException, IOException  
     {
         //rainbow = fo.load();
-        generateTable();
+        generateTable(stringlength);
         fo.save(rainbow);
-        //System.out.println(rainbow.keySet().size());
-        //System.out.println("\n\n");
-        //bruteforce(charset, charset.length, stringlength, "");
-        //System.out.println("Cracked " + count);
+        System.out.println("Chains generated: " + rainbow.keySet().size());
+        System.out.println("\n\n");
+        bruteforce(charset, charset.length, stringlength, "");
+        System.out.println("Cracked " + count);
+        //String a = "";
+        //ArrayList<String> st = new ArrayList<>();
+        //for(int i = 0; i < charset.length; i++)
+        //{
+        //    a+=charset[i];
+        //    System.out.println("Letter: " + a);
+        //    String t = reduce(sha1(a), stringlength, i);
+        //    if(!st.contains(t))
+        //        st.add(t);
+        //    a = "";
+        //    System.out.println();
+        //}
+        //for(String s : st)
+        //    System.out.print("'" + s + "' ");
+        //System.out.print("\nTotal: " + st.size() + "\n");
     }
     
-    static int bruteforce(char[] set, int n, int length, String p) throws NoSuchAlgorithmException, FileNotFoundException
+    static void bruteforce(char[] set, int n, int length, String p) throws NoSuchAlgorithmException, FileNotFoundException
     {
         if(length == 0)
         {
             String sha = sha1(p);
+            //System.out.println("Checking " + p + " with hash " + sha);
             if(!crack(sha).equals("NOT FOUND"))
             {
                 System.out.println("Cracked " + p + " with hash: " + sha);
                 count++;
             }
-            return 0;
+            return;
         }
         for(int i = 0; i < n; i++)
         {
             String np = p + set[i];
             bruteforce(set, n, length - 1, np);
         }
-        return 0;
+        return;
     }
     
     static String crack(String hash) throws FileNotFoundException, NoSuchAlgorithmException
@@ -68,14 +83,13 @@ public class RainbowTables {
         {
             for(String key : rainbow.keySet())
             {
-
                 if(key.equals(hash))
                 {
-                    String h = key;
+                    String h;
                     String tp = rainbow.get(key);
                     String p = tp;
                     int l = tp.length();
-                    for(int i = 0; i < chainlength; i++)
+                    for(int i = 1; i < chainlength + 1; i++)
                     {
                         h = sha1(tp);
                         if(h.equals(phash))
@@ -85,7 +99,7 @@ public class RainbowTables {
                 }
                 else
                 {
-                    hash = reduce(hash, stringlength, chainlength - 1);
+                    hash = reduce(hash, stringlength, chainlength - c);
                     hash = sha1(hash);
                 }
             }
@@ -93,12 +107,12 @@ public class RainbowTables {
         return "NOT FOUND";
     }
     
-    static void generateTable() throws NoSuchAlgorithmException, IOException
+    static void generateTable(int slength) throws NoSuchAlgorithmException, IOException
     {
         for(int i = 0; i < tablesize; i++)
         {
-            System.out.println("Generated " + i + " chains.");
-            generateChain(getString(charset, stringlength));
+            System.out.println("Generating chain " + i + "...");
+            generateChain(getString(charset, slength));
         }
     }
     
@@ -108,11 +122,11 @@ public class RainbowTables {
         String tp = start;
         for(int i = 1; i < chainlength + 1; i++)
         {
-            System.out.println("TP: " + tp + " Start: " + start);
+            //System.out.println("TP: " + tp + " Start: " + start);
             h = sha1(tp);
-            System.out.println("TP hashed: " + h);
+            //System.out.println("TP hashed: " + h);
             tp = reduce(h, stringlength, i);
-            System.out.println("H reduced: " + tp);
+            //System.out.println("H reduced: " + tp);
         }
         rainbow.put(h, start);
     }
@@ -122,18 +136,17 @@ public class RainbowTables {
         String s = "";
         for(int i = 0; i < maxlength; i++)
             s += set[random.nextInt(set.length)];
-        System.out.println("String generated: " + s);
+        //System.out.println("String generated: " + s);
         return s;
     }
     
     static String reduce(String hash, int length, int step)
     {
-        System.out.print("Hash: " + hash + " ");
+        //System.out.print("Hash: " + hash + " ");
         BigInteger bi = new BigInteger(hash, 16);
-        bi = bi.pow(step);
-        bi = bi.mod(prime);
+        bi = bi.modPow(BigInteger.valueOf(step), prime);
         hash = bi.toString();
-        System.out.print("As BI: " + hash + " ");
+        //System.out.print("As BI: " + hash + " ");
         String reduced = "";
         int x = 0;
         while(true)
@@ -141,17 +154,17 @@ public class RainbowTables {
             {
                 if(reduced.length() == length)
                 {
-                    System.out.println("reduced into: " + reduced);
+                    //System.out.println("reduced into: " + reduced);
                     return reduced;
                 }
                 else
                 {
-                    x = hash.charAt(i);
-                    //System.out.println("x:" + x);
+                    x = hash.charAt(i) + hash.charAt((i + (step % hash.length()))%hash.length());
+                    //System.out.println("x: " + x);
                     x %= charset.length;
-                    //System.out.println("xm:" + x);
+                    //System.out.println("xm: " + x);
                     x = x < 0 ? x + charset.length : x;
-                    //System.out.println("xmf:" + x);
+                    //System.out.println("xmf: " + x);
                     reduced += charset[x];
                 }
             }
