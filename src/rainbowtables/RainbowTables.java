@@ -15,9 +15,9 @@ public class RainbowTables {
         'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static Random random = new Random();
     
-    static int tablesize = 10;
+    static int tablesize = 1000;
     static int chainlength = 1000;
-    static int stringlength = 1;
+    static int stringlength = 6;
     
     static HashMap<String, String> rainbow = new HashMap<>();
     
@@ -30,6 +30,8 @@ public class RainbowTables {
         //rainbow = fo.load();
         generateTable();
         fo.save(rainbow);
+        System.out.println(rainbow.keySet().size());
+        System.out.println("\n\n");
         bruteforce(charset, charset.length, stringlength, "");
         System.out.println("Cracked " + count);
     }
@@ -39,7 +41,6 @@ public class RainbowTables {
         if(length == 0)
         {
             String sha = sha1(p);
-            System.out.println("Checking " + p + " hash " + sha);
             if(!crack(sha).equals("NOT FOUND"))
             {
                 System.out.println("Cracked " + p + " with hash: " + sha);
@@ -118,10 +119,11 @@ public class RainbowTables {
                     return reduced;
                 else
                 {
+                    x = 0;
                     for(int c = 0; c < charset.length; c++)
                         if(hash.charAt(i) == charset[c])
                         {
-                            x = (c * step + step * length + i * step) / (step + charset.length);
+                            x = (c * step + i) / (step + charset.length);
                             break;
                         }
                     x %= charset.length;
