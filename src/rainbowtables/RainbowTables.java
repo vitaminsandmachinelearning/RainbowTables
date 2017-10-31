@@ -3,6 +3,7 @@ package rainbowtables;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.*;
 import java.util.HashMap;
 import java.util.Random;
@@ -10,14 +11,16 @@ import java.util.Random;
 
 public class RainbowTables {
 
+    static BigInteger prime = new BigInteger("102280476371", 10);
+    
     static char[] charset = {' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 
         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 
         'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static Random random = new Random();
     
-    static int tablesize = 1000;
-    static int chainlength = 1000;
-    static int stringlength = 6;
+    static int tablesize = 100;
+    static int chainlength = 300;
+    static int stringlength = 5;
     
     static HashMap<String, String> rainbow = new HashMap<>();
     
@@ -30,10 +33,10 @@ public class RainbowTables {
         //rainbow = fo.load();
         generateTable();
         fo.save(rainbow);
-        System.out.println(rainbow.keySet().size());
-        System.out.println("\n\n");
-        bruteforce(charset, charset.length, stringlength, "");
-        System.out.println("Cracked " + count);
+        //System.out.println(rainbow.keySet().size());
+        //System.out.println("\n\n");
+        //bruteforce(charset, charset.length, stringlength, "");
+        //System.out.println("Cracked " + count);
     }
     
     static int bruteforce(char[] set, int n, int length, String p) throws NoSuchAlgorithmException, FileNotFoundException
@@ -95,39 +98,60 @@ public class RainbowTables {
         for(int i = 0; i < tablesize; i++)
         {
             System.out.println("Generated " + i + " chains.");
-            for(int j = 1; j < stringlength + 1; j++)
-                generateChain(getString(charset, j));
+            generateChain(getString(charset, stringlength));
         }
     }
     
-    static void outputTable()
+     static void generateChain(String start) throws NoSuchAlgorithmException
     {
-        rainbow.keySet().forEach((key) -> {
-            System.out.println("Plaintext: " + rainbow.get(key) + " Hash: " + key);
-        });
-        System.out.println("Total keys: " + rainbow.keySet().size());
+        String h = "";
+        String tp = start;
+        for(int i = 1; i < chainlength + 1; i++)
+        {
+            System.out.println("TP: " + tp + " Start: " + start);
+            h = sha1(tp);
+            System.out.println("TP hashed: " + h);
+            tp = reduce(h, stringlength, i);
+            System.out.println("H reduced: " + tp);
+        }
+        rainbow.put(h, start);
+    }
+    
+    static String getString(char[] set, int maxlength)
+    {
+        String s = "";
+        for(int i = 0; i < maxlength; i++)
+            s += set[random.nextInt(set.length)];
+        System.out.println("String generated: " + s);
+        return s;
     }
     
     static String reduce(String hash, int length, int step)
     {
+        System.out.print("Hash: " + hash + " ");
+        BigInteger bi = new BigInteger(hash, 16);
+        bi = bi.pow(step);
+        bi = bi.mod(prime);
+        hash = bi.toString();
+        System.out.print("As BI: " + hash + " ");
         String reduced = "";
         int x = 0;
         while(true)
             for(int i = 0; i < hash.length(); i++)
             {
                 if(reduced.length() == length)
+                {
+                    System.out.println("reduced into: " + reduced);
                     return reduced;
+                }
                 else
                 {
-                    x = 0;
-                    for(int c = 0; c < charset.length; c++)
-                        if(hash.charAt(i) == charset[c])
-                        {
-                            x = (c * step + i) / (step + charset.length);
-                            break;
-                        }
+                    x = hash.charAt(i);
+                    //System.out.println("x:" + x);
                     x %= charset.length;
+                    //System.out.println("xm:" + x);
                     x = x < 0 ? x + charset.length : x;
+                    //System.out.println("xmf:" + x);
                     reduced += charset[x];
                 }
             }
@@ -143,23 +167,5 @@ public class RainbowTables {
         return toReturn;
     }
     
-    static void generateChain(String start) throws NoSuchAlgorithmException
-    {
-        String h = "";
-        String tp = start;
-        for(int i = 0; i < chainlength; i++)
-        {
-            h = sha1(tp);
-            tp = reduce(h, stringlength, i);
-        }
-        rainbow.put(h, start);
-    }
-    
-    static String getString(char[] set, int maxlength)
-    {
-        String s = "";
-        for(int i = 0; i < maxlength; i++)
-            s += set[random.nextInt(set.length)];
-        return s;
-    }
+   
 }
