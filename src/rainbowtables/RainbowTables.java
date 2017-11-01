@@ -10,16 +10,16 @@ import java.util.*;
 
 public class RainbowTables {
 
-    static BigInteger prime = new BigInteger("122949823");
+    static BigInteger prime = new BigInteger("75269");
     
     static char[] charset = {' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 
         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 
         'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static Random random = new Random();
     
-    static int tablesize = 10000;
-    static int chainlength = 1000;
-    static int stringlength = 3;
+    static int tablesize = 1;
+    static int chainlength = 10;
+    static int stringlength = 1;
     
     static HashMap<String, String> rainbow = new HashMap<>();
     
@@ -32,31 +32,38 @@ public class RainbowTables {
         //rainbow = fo.load();
         generateTable(stringlength);
         fo.save(rainbow);
-        System.out.println("Chains generated: " + rainbow.keySet().size());
-        System.out.println("\n\n");
-        bruteforce(charset, charset.length, stringlength, "");
-        System.out.println("Cracked " + count);
-        //String a = "";
-        //ArrayList<String> st = new ArrayList<>();
-        //for(int i = 0; i < charset.length; i++)
-        //{
-        //    a+=charset[i];
-        //    System.out.println("Letter: " + a);
-        //    String t = reduce(sha1(a), stringlength, i);
-        //    if(!st.contains(t))
-        //        st.add(t);
-        //    a = "";
-        //    System.out.println();
-        //}
-        //for(String s : st)
-        //    System.out.print("'" + s + "' ");
-        //System.out.print("\nTotal: " + st.size() + "\n");
+        //System.out.println("Chains generated: " + rainbow.keySet().size());
+        //System.out.println("\n\n");
+        //bruteforce(charset, charset.length, stringlength, "");
+        //System.out.println("\n\nTOTAL CRACKED: " + count);
+        //System.out.println(crack(sha1("w")));
+        //System.out.println("Cracked " + count);
+        String a = "";
+        ArrayList<String> st = new ArrayList<>();
+        for(int i = 0; i < charset.length; i++)
+        {
+            a+=charset[i];
+            //System.out.println("Letter: " + a);
+            String t = "";
+            for(int j = 0; j < charset.length; j++)
+            {
+                t = reduce(sha1(a), stringlength, j);
+                if(!st.contains(t))
+                    st.add(t);
+            }
+            a = "";
+            System.out.println();
+        }
+        for(String s : st)
+            System.out.print("'" + s + "' ");
+        System.out.print("\nTotal: " + st.size() + "\n");
     }
     
     static void bruteforce(char[] set, int n, int length, String p) throws NoSuchAlgorithmException, FileNotFoundException
     {
         if(length == 0)
         {
+            System.out.println("\n\nCRACKING " + p);
             String sha = sha1(p);
             //System.out.println("Checking " + p + " with hash " + sha);
             if(!crack(sha).equals("NOT FOUND"))
@@ -81,28 +88,32 @@ public class RainbowTables {
         
         for(int c = 0; c < chainlength; c++)
         {
+            System.out.println("Checking hash: " + hash);
             for(String key : rainbow.keySet())
             {
+                System.out.println("Against key " + key);
                 if(key.equals(hash))
                 {
+                    System.out.println("EQUAL");
                     String h;
                     String tp = rainbow.get(key);
+                    System.out.println("\tTP: " + rainbow.get(key));
                     String p = tp;
                     int l = tp.length();
                     for(int i = 1; i < chainlength + 1; i++)
                     {
                         h = sha1(tp);
+                        System.out.println("\tHashed to " + h);
+                        System.out.println("\tPHASH: " + phash);
                         if(h.equals(phash))
                             return tp;
                         tp = reduce(h, l, i);
+                        System.out.println("\tReduced to " + tp);
                     }
                 }
-                else
-                {
-                    hash = reduce(hash, stringlength, chainlength - c);
-                    hash = sha1(hash);
-                }
             }
+            hash = reduce(hash, stringlength, chainlength - c);
+            hash = sha1(hash);
         }
         return "NOT FOUND";
     }
@@ -120,13 +131,14 @@ public class RainbowTables {
     {
         String h = "";
         String tp = start;
+        System.out.println("Start: " + start);
         for(int i = 1; i < chainlength + 1; i++)
         {
-            //System.out.println("TP: " + tp + " Start: " + start);
+            //System.out.println("TP: " + tp);
             h = sha1(tp);
             //System.out.println("TP hashed: " + h);
             tp = reduce(h, stringlength, i);
-            //System.out.println("H reduced: " + tp);
+            System.out.println("H reduced: " + tp);
         }
         rainbow.put(h, start);
     }
@@ -142,11 +154,12 @@ public class RainbowTables {
     
     static String reduce(String hash, int length, int step)
     {
+        //System.out.println("STEP " + step);
         //System.out.print("Hash: " + hash + " ");
         BigInteger bi = new BigInteger(hash, 16);
         bi = bi.modPow(BigInteger.valueOf(step), prime);
         hash = bi.toString();
-        //System.out.print("As BI: " + hash + " ");
+        //System.out.println("As BI: " + hash + " ");
         String reduced = "";
         int x = 0;
         while(true)
@@ -154,16 +167,18 @@ public class RainbowTables {
             {
                 if(reduced.length() == length)
                 {
-                    //System.out.println("reduced into: " + reduced);
                     return reduced;
                 }
                 else
                 {
-                    x = hash.charAt(i) + hash.charAt((i + (step % hash.length()))%hash.length());
+                    step %= hash.length();
+                    step = step < 0 ? step + hash.length() : step;
+                    //System.out.println("STEP2: " + step);
+                    x = hash.charAt(i) * hash.charAt(i + step % hash.length());
                     //System.out.println("x: " + x);
                     x %= charset.length;
                     //System.out.println("xm: " + x);
-                    x = x < 0 ? x + charset.length : x;
+                    x = Math.abs(x);
                     //System.out.println("xmf: " + x);
                     reduced += charset[x];
                 }
