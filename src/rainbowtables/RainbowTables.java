@@ -27,14 +27,14 @@ public class RainbowTables {
     
     public static void main(String[] args) throws FileNotFoundException, NoSuchAlgorithmException, IOException  
     {
-        //rainbow = fo.load();
-        generateTable(stringlength);
-        fo.save(rainbow);
+        rainbow = fo.load();
+        //generateTable(stringlength);
+        //fo.save(rainbow);
         System.out.println("Chains generated: " + rainbow.keySet().size());
         //System.out.println("\n\n");
         //bruteforce(charset, charset.length, stringlength, "");
         //System.out.println("\n\nTOTAL CRACKED: " + count);
-        //System.out.println(crack(sha1("36705452")));
+        System.out.println(crack(sha1("36705452")));
         //System.out.println(crack(sha1("38847313")));
         //System.out.println(crack(sha1("40056752")));
         //System.out.println("Cracked " + count);
