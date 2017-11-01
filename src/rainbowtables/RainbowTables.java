@@ -15,21 +15,21 @@ public class RainbowTables {
     static char[] charset = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static Random random = new Random();
     
-    static int tablesize = 15000;
-    static int chainlength = 15000;
+    static int tablesize = 10000;
+    static int chainlength = 10000;
     static int stringlength = 8;
     
     static HashMap<String, String> rainbow = new HashMap<>();
     
-    static FileOps fo = new FileOps("10000x10000l6");
+    static FileOps fo = new FileOps("10000x10000l5");
     
     static int count = 0;
     
     public static void main(String[] args) throws FileNotFoundException, NoSuchAlgorithmException, IOException  
     {
-        rainbow = fo.load();
-        //generateTable(stringlength);
-        //fo.save(rainbow);
+        //rainbow = fo.load();
+        generateTable(stringlength);
+        fo.save(rainbow);
         System.out.println("Chains generated: " + rainbow.keySet().size());
         //System.out.println("\n\n");
         //bruteforce(charset, charset.length, stringlength, "");
