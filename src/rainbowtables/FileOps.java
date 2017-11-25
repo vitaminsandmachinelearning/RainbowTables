@@ -10,16 +10,12 @@ public class FileOps {
     
     public FileOps(String filename)
     {
-        setFile(filename);
-    }
-    
-    public void setFile(String filename)
-    {
         file = filename + ".txt";
     }
     
     public HashMap<String, String> load() throws FileNotFoundException
     {
+        //create a hashmap to return and populate it with the contents of a file containing a stored hashmap
         HashMap<String, String> hm = new HashMap<>();
         String[] x = new String[2];
         try{
@@ -36,6 +32,7 @@ public class FileOps {
     
     public void save(HashMap hm) throws UnsupportedEncodingException, IOException
     {
+        //write out every value in the hashmap to a file with the format "final_hash:initial_plaintext"
         try (Writer writer = new BufferedWriter(new OutputStreamWriter( new FileOutputStream(file), "utf-8"))) 
         {
             hm.keySet().forEach((key) -> 
