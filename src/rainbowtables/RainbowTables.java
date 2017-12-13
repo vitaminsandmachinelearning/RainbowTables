@@ -20,12 +20,12 @@ public class RainbowTables {
     
     static int tablesize = 2000;    //the amount of chains to generate
     static int chainlength = 2000;  //the length of chains to generate
-    static int stringlength = 6;    //the length of plaintexts used
+    static int stringlength = 8;    //the length of plaintexts used
     
     //used to store generated or loaded rainbow table
     static HashMap<String, String> rainbow = new HashMap<>();
     //used to read and write files. THE NAME OF THE FILE TO SAVE AND LOAD SHOULD BE THE PARAMETER
-    static FileOps fo = new FileOps("test6");
+    static FileOps fo = new FileOps("test8");
     //get timestamp of program start
     static long starttime = System.currentTimeMillis();
     
@@ -33,7 +33,7 @@ public class RainbowTables {
     {
         //HOW TO ADD HASHES TO THE LIST TO BE CRACKED
         //hashes.add("bb888922700565814d8437467cf8898365dd3938"); // use this if you want to add a hash
-        //hashes.add(sha1("786347")); // use this if you want a specific plaintext (debugging and testing)
+        //hashes.add(sha1("97130666")); // use this if you want a specific plaintext (debugging and testing)
 
         //ENABLE THESE LINES TO GENERATE A NEW TABLE AND SAVE IT TO A FILE
         generateTable(stringlength);
